@@ -1,57 +1,46 @@
 import streamlit as st
 
-def check_answer(question_key, correct_answer):
-    if st.session_state[question_key] == correct_answer:
-        st.success("That is correct")
-        st.session_state.score += 1
-    else:
-        st.error("That is incorrect")
-
 def main():
     st.title("Welcome to my Quiz")
 
-    # Initialize session state variables
+    # Initialize session state for score and question submissions
     if 'score' not in st.session_state:
         st.session_state.score = 0
-    if 'submitted' not in st.session_state:
-        st.session_state.submitted = {1: False, 2: False, 3: False, 4: False}
+    if 'submitted_questions' not in st.session_state:
+        st.session_state.submitted_questions = {}
 
-    if st.button("Start Quiz"):
-        st.write("Brilliant, let us begin!")
-
-        # Question 1
-        q1_answer = st.text_input("In what year did the American Civil War begin?", key='q1')
-        if st.button("Check Answer 1") and not st.session_state.submitted[1]:
-            check_answer('q1', '1861')
-            st.session_state.submitted[1] = True
-
-        # Question 2
-        q2_answer = st.text_input("In what year did the American Revolutionary War begin?", key='q2')
-        if st.button("Check Answer 2") and not st.session_state.submitted[2]:
-            check_answer('q2', '1775')
-            st.session_state.submitted[2] = True
-
-        # Question 3
-        q3_answer = st.text_input("In what year did the Russian Revolution take place?", key='q3')
-        if st.button("Check Answer 3") and not st.session_state.submitted[3]:
-            check_answer('q3', '1917')
-            st.session_state.submitted[3] = True
-
-        # Question 4
-        q4_answer = st.text_input("What is the name of the most decorated US Navy ship of all time?", key='q4')
-        if st.button("Check Answer 4") and not st.session_state.submitted[4]:
-            correct_answer = "uss new jersey"
-            if q4_answer.lower() == correct_answer:
-                st.success("That is correct")
+    # Helper function to process answers
+    def process_answer(question_num, answer, correct_answer):
+        if question_num not in st.session_state.submitted_questions:
+            if answer.lower() == correct_answer.lower():
+                st.success("That is correct!")
                 st.session_state.score += 1
             else:
-                st.error("That is incorrect")
-            st.session_state.submitted[4] = True
+                st.error("That is incorrect.")
+            st.session_state.submitted_questions[question_num] = True
 
-        # Show Final Score
-        if all(st.session_state.submitted.values()):
-            st.write(f'You received {st.session_state.score} questions correct out of 4.')
-            st.write(f'You received {(st.session_state.score/4)*100}%.')
+    # Start the quiz
+    if st.button("Start Quiz"):
+        with st.form("quiz_form"):
+            # Questions
+            q1 = st.text_input("1. In what year did the American Civil War begin?")
+            q2 = st.text_input("2. In what year did the American Revolutionary War begin?")
+            q3 = st.text_input("3. In what year did the Russian Revolution take place?")
+            q4 = st.text_input("4. What is the name of the most decorated US Navy ship of all time?")
+
+            # Submit button for the form
+            submitted = st.form_submit_button("Submit Answers")
+            if submitted:
+                process_answer(1, q1, "1861")
+                process_answer(2, q2, "1775")
+                process_answer(3, q3, "1917")
+                process_answer(4, q4, "USS New Jersey")
+
+    # Show score after all questions are answered
+    if len(st.session_state.submitted_questions) == 4:
+        st.write(f"You received {st.session_state.score} out of 4 questions correct.")
+        st.write(f"Your score is {(st.session_state.score / 4) * 100}%.")
 
 if __name__ == "__main__":
     main()
+
